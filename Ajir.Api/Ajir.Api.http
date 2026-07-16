@@ -1,0 +1,6 @@
+@Ajir.Api_HostAddress = http://localhost:5244
+
+GET {{Ajir.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
