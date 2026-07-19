@@ -3,6 +3,7 @@ using System;
 using Ajir.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Ajir.Api.Migrations
 {
     [DbContext(typeof(AjirDbContext))]
-    partial class AjirDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260719225149_AddIssueTypeAndPriority")]
+    partial class AddIssueTypeAndPriority
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.10");

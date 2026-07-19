@@ -11,4 +11,8 @@ public class Issue
     public IssueStatus Status {get; set;} = IssueStatus.ToDo;
 
     public DateTime CreatedAt {get; set;} = DateTime.UtcNow;
+
+    public IssueType Type { get; set; }
+    public IssuePriority Priority { get; set; }
 }
+

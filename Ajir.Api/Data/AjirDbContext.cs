@@ -12,6 +12,7 @@ public class AjirDbContext : DbContext
 
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<Issue> Issues => Set<Issue>();
+    
 
     // Fluent API
     protected override void OnModelCreating(ModelBuilder modelBuilder)
