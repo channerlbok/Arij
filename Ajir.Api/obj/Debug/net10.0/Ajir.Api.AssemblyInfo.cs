@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Ajir.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d57b92c452f50df95f25dbd2135eeb86938cfd58")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+067e96fa1633549484c052fbf8b78f18fa546af7")]
 [assembly: System.Reflection.AssemblyProductAttribute("Ajir.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Ajir.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
