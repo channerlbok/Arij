@@ -28,8 +28,22 @@ Builder.Services.AddDbContext<AjirDbContext>(options =>
    options.UseSqlite(connectionString); 
 });
 
+// Configure CORS to allows frontend access to backend
+Builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AjirFrontend", policy =>
+    {
+       policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod(); 
+    });
+});
+
 // Build App
 var app = Builder.Build();
+
+app.UseCors("AjirFrontend");
 
 // Expose  OpenAPI endpoit
 app.MapOpenApi();

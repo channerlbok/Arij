@@ -57,10 +57,11 @@ public static class IssueEndpoints
             var issue = new Issue
             {
                 ProjectId = projectId,
-                Title = request.Title,
-                Description = request.Description,
+                Title = request.Title.Trim(),
+                Description = request.Description.Trim(),
                 Priority = request.Priority,
-                Status = request.Status
+                Status = request.Status,
+                Type = request.Type
             };
 
             db.Issues.Add(issue);
@@ -70,7 +71,7 @@ public static class IssueEndpoints
 
 
         // Handle Get request for projects issues
-        app.MapGet("/projects/{projectId:guid}/issues", async (Guid projectId, AjirDbContext db) =>
+        app.MapGet("/projects/{projectId:guid}/issues", async (Guid projectId, IssueType? type, IssueStatus? status, IssuePriority? priority, AjirDbContext db) =>
         {
             var project = await db.Projects
                 .AsNoTracking()
@@ -84,10 +85,27 @@ public static class IssueEndpoints
                 });
             }
 
-            var projectIssues = await db.Issues
+            var query = db.Issues
                 .AsNoTracking()
-                .Where(i => i.ProjectId == projectId)
-                .ToListAsync();
+                .Where(i => i.ProjectId == projectId);
+
+            if (type.HasValue)
+            {
+                query = query.Where(i => i.Type == type.Value);
+            }
+
+            if (priority.HasValue)
+            {
+                query = query.Where(i => i.Priority == priority.Value);
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(i => i.Status == status.Value);
+            }
+
+            
+            var projectIssues = await query.ToListAsync();
 
             return Results.Ok(projectIssues);
         });
