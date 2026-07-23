@@ -54,6 +54,7 @@ function CreateProjectForm({
             </label>
 
             <button type="submit">Create project</button>
+            
         </form>
     )
 }
