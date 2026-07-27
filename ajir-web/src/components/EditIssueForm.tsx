@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from 'react'
 import type { Issue } from '../types/Issue'
 import type { Project } from "../types/Project";
-
+import { API_BASE_URL } from '../config'
 
 interface EditIssueProps{
     project: Project
@@ -23,11 +23,26 @@ function EditIssueForm({
     const [status, setStatus] = useState(issue.status)
     const [priority, setPriority] = useState(issue.priority)
     const [type, setType] = useState(issue.type)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [submitError, setSubmitError] = useState<string | null> (null)
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>){
         event.preventDefault()
+        setSubmitError(null)
 
-        const response = await fetch(`http://localhost:5244/projects/${project.id}/issues/${issue.id}`, 
+        if (title.trim() === '') {
+        setSubmitError('Issue title is required')
+        return
+        }
+
+        if (description.trim() === '') {
+        setSubmitError('Issue description is required')
+        return
+        }
+
+        setIsSubmitting(true)
+        try {
+            const response = await fetch(`${API_BASE_URL}/projects/${project.id}/issues/${issue.id}`, 
             {
                 method: "PUT",
                 headers:{
@@ -35,15 +50,22 @@ function EditIssueForm({
                 },
                 body: JSON.stringify({title,description,status,priority,type})
             }
-        )
+            )
 
-        if(!response.ok){
-            throw new Error('Failed to update issue')
+            if(!response.ok){
+                throw new Error('Failed to update issue')
+            }
+
+            const updatedIssue: Issue = await response.json()
+
+            onIssueUpdated(updatedIssue)
+            } catch {
+            setSubmitError('Failed to update issue')
+        }
+        finally{
+            setIsSubmitting(false)
         }
 
-        const updatedIssue: Issue = await response.json()
-
-        onIssueUpdated(updatedIssue)
     }
 
     return(
@@ -53,6 +75,7 @@ function EditIssueForm({
             <input
                 value={title}
                 onChange={event => setTitle(event.target.value)}
+                required
             />
             </label>
 
@@ -61,34 +84,59 @@ function EditIssueForm({
             <textarea
                 value={description}
                 onChange={event => setDescription(event.target.value)}
+                required
             />
             </label>
             
             <label>
             Type
-            <textarea
+            <select
                 value={type}
                 onChange={event => setType(event.target.value)}
-            />
+                required
+            >
+                <option value = "">Select a type</option>
+                <option value = "Bug">Bug</option>
+                <option value = "Task">Task</option>
+                <option value = "Feature">Feature</option>
+            </select>
             </label>
             
             <label>
             Priority
-            <textarea
+            <select
                 value={priority}
                 onChange={event => setPriority(event.target.value)}
-            />
+                required
+            >
+                <option value = "">Select a priority</option>
+                <option value = "High">High</option>
+                <option value = "Medium">Medium</option>
+                <option value = "Low">Low</option>
+            </select>
             </label>
             
             <label>
             Status
-            <textarea
+            <select
                 value={status}
                 onChange={event => setStatus(event.target.value)}
-            />
+                required
+            
+            >
+                <option value = "">Select a status</option>
+                <option value = "ToDo">Todo</option>
+                <option value = "InProgress">InProgress</option>
+                <option value = "Done">Done</option>
+            </select>
             </label>
 
-            <button type="submit">Update issue</button>
+            {submitError && (
+                <p className="error-message"> {submitError} </p>
+            )}
+            <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Updating...' : 'Update Issue'}
+            </button>
             <button type="button" onClick={onCancel}>
             Cancel
             </button>
