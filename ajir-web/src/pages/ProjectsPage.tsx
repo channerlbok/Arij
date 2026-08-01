@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { Project } from '../types/Project'
 import ProjectList from '../components/ProjectList'
 import CreateProjectForm from '../components/CreateProjectForm'
+import AuthenticatedHeader from '../components/AuthenticatedHeader'
 import EditProjectForm from '../components/EditProjectForm'
 import { API_BASE_URL } from '../config'
 
@@ -22,10 +23,18 @@ function ProjectsPage() {
                 setProjectIsLoading(true)
                 setProjectLoadError(null)
 
-                const response = await fetch(`${API_BASE_URL}/projects`)
+                const response = await fetch(
+                  `${API_BASE_URL}/projects`,
+                {
+                  credentials: "include"
+                })
 
+                if(response.status === 401){
+                  navigate('/login')
+                }
+                
                 if(!response.ok){
-                throw new Error('Failed to load projects')
+                  throw new Error('Failed to load projects')
                 }
                 const data: Project[] = await response.json()
                 setProjects(data)
@@ -37,7 +46,7 @@ function ProjectsPage() {
         }
         }
         loadProjects()
-    }, [])
+    }, [navigate])
   
     // Delete a project handler
     async function handleDeleteProject(id: string) {
@@ -55,7 +64,8 @@ function ProjectsPage() {
             const response = await fetch(
             `${API_BASE_URL}/projects/${id}`,
             {
-                method: 'DELETE'
+                method: 'DELETE',
+                credentials: 'include'
             }
             )
 
@@ -74,17 +84,29 @@ function ProjectsPage() {
     }
 
 
+
   return (
   <>
+     <AuthenticatedHeader />
     <h1>Mochu</h1>
-    {isProjectLoading && <p> Loading projects...</p>}
+    <section className="page-heading">
+      <div>
+        <p className="eyebrow">YOUR WORKSPACE</p>
+        <h1>Projects</h1>
+        <p>Create projects and organize the issues that move them forward.</p>
+      </div>
+
+      <div className="project-count">
+        <strong>{projects.length}</strong>
+        <span>Total projects</span>
+      </div>
+    </section>
     {projectLoadError && (
-      <p className="error-message">
+      <p className="error-message"> 
         {projectLoadError}
       </p>
     )}
 
-    <p>{projects.length} My projects</p>
     <CreateProjectForm 
       onProjectCreated={project => 
         setProjects(currentProjects => [
@@ -123,6 +145,7 @@ function ProjectsPage() {
       }
       />
    )}
+
   </>
   )
 }

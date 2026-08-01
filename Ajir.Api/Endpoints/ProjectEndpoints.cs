@@ -2,7 +2,7 @@ using Ajir.Api.Contracts;
 using Ajir.Api.Models;
 using Ajir.Api.Data;
 using Microsoft.EntityFrameworkCore;
-
+using System.Security.Claims;
 
 namespace Ajir.Api.Endpoints;
 
@@ -11,10 +11,20 @@ public static class ProjectEndpoints
     public static void MapProjectEndpoints( this IEndpointRouteBuilder app)
     {
 
+        // Require authorization for every request
+        var projectsGroup = app
+            .MapGroup("/projects")
+            .RequireAuthorization();
 
         // Handle Post Request
-        app.MapPost("/projects", async (CreateProjectRequest request, AjirDbContext db) =>
+        projectsGroup.MapPost("", async (CreateProjectRequest request, AjirDbContext db, ClaimsPrincipal user) =>
         {
+
+            var ownerID = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if(ownerID is null)
+            {
+                return Results.Unauthorized();
+            }
             // Ensure name/Descr is valid chars
             if (string.IsNullOrWhiteSpace(request.Name))
             {
@@ -50,7 +60,8 @@ public static class ProjectEndpoints
             var project = new Project
             {
                 Name = request.Name.Trim(),
-                Description = request.Description.Trim()
+                Description = request.Description.Trim(),
+                OwnerId= ownerID
             };
 
             db.Projects.Add(project);
@@ -62,16 +73,21 @@ public static class ProjectEndpoints
 
 
         // Get all projects
-        app.MapGet("/projects", async (AjirDbContext db) =>
+        projectsGroup.MapGet("", async (AjirDbContext db, ClaimsPrincipal user) =>
         {
 
             /*
             SELECT Id, Name, Description, CreatedAt
             FROM Projects;
             */
-
+            var ownerID = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (ownerID is null)
+            {
+                return Results.Unauthorized();
+            }
             var projects = await db.Projects
                 .AsNoTracking()
+                .Where(project => project.OwnerId == ownerID)
                 .ToListAsync();
 
             return Results.Ok(projects);
@@ -79,10 +95,16 @@ public static class ProjectEndpoints
 
 
         // Get and return a project based on the project id
-        app.MapGet("/projects/{id:guid}", async (Guid id, AjirDbContext db) =>
+        projectsGroup.MapGet("/{id:guid}", async (Guid id, AjirDbContext db, ClaimsPrincipal user) =>
         {
+            var ownerID = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (ownerID is null)
+            {
+                return Results.Unauthorized();
+            }
             var project = await db.Projects
                 .AsNoTracking()
+                .Where(project => project.OwnerId == ownerID)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (project is null)
@@ -93,9 +115,17 @@ public static class ProjectEndpoints
         });
 
         // Handle Delete request
-        app.MapDelete("/projects/{id:guid}", async (Guid id, AjirDbContext db) =>
+        projectsGroup.MapDelete("/{id:guid}", async (Guid id, AjirDbContext db, ClaimsPrincipal user) =>
         {
-            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == id);
+
+            var ownerID = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (ownerID is null)
+            {
+                return Results.Unauthorized();
+            }
+            var project = await db.Projects
+            .Where(project => project.OwnerId == ownerID)
+            .FirstOrDefaultAsync(p => p.Id == id);
 
             if (project is null)
             {
@@ -109,9 +139,13 @@ public static class ProjectEndpoints
 
 
         // Handle Put request for project
-        app.MapPut("/projects/{id:guid}", async (Guid id, UpdateProjectRequests request, AjirDbContext db) =>
+        projectsGroup.MapPut("/{id:guid}", async (Guid id, UpdateProjectRequests request, AjirDbContext db, ClaimsPrincipal user) =>
         {
-
+            var ownerID = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (ownerID is null)
+            {
+                return Results.Unauthorized();
+            }
             // Ensure name/Descr is valid chars
             if (string.IsNullOrWhiteSpace(request.Name))
             {
@@ -144,7 +178,9 @@ public static class ProjectEndpoints
                     error = "Description cannot exceed 1000 characters"
                 });
             }
-            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == id);
+            var project = await db.Projects
+            .Where(project => project.OwnerId == ownerID)
+            .FirstOrDefaultAsync(p => p.Id == id);
 
             if (project is null)
             {

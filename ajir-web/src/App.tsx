@@ -4,15 +4,24 @@ import './App.css'
 
 import { Navigate, Route, Routes} from 'react-router-dom'
 import ProjectIssuesPage from './pages/ProjectIssuesPage'
-
+import LoginPage from './pages/LoginPage'
+import RegistrationPage from './pages/RegistrationPage'
 
 
 function App(){
   return(
-        <Routes>
+    <Routes>
+      <Route
+        path="/register"
+        element={<RegistrationPage/>}
+      />  
+      <Route
+        path="/login"
+        element={<LoginPage/>}
+      />
       <Route
         path="/"
-        element={<Navigate to="/projects" replace />}
+        element={<Navigate to="/login" replace />}
       />
 
       <Route

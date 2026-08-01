@@ -45,6 +45,7 @@ function EditIssueForm({
             const response = await fetch(`${API_BASE_URL}/projects/${project.id}/issues/${issue.id}`, 
             {
                 method: "PUT",
+                credentials: 'include',
                 headers:{
                     'Content-Type' : 'application/json'
                 },

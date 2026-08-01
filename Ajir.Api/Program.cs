@@ -1,10 +1,10 @@
 // Import project class
 using Ajir.Api.Models;
-using Ajir.Api.Contracts;
+using Microsoft.AspNetCore.Identity;
 using Ajir.Api.Data;
 using Ajir.Api.Endpoints;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization;
 
 // Create Web app builder
@@ -25,8 +25,12 @@ Builder.Services.AddOpenApi();
 // Register the database context service
 Builder.Services.AddDbContext<AjirDbContext>(options =>
 {
-   options.UseSqlite(connectionString); 
+    options.UseAzureSql(connectionString);
 });
+
+Builder.Services
+    .AddIdentityApiEndpoints<ApplicationUser>()
+    .AddEntityFrameworkStores<AjirDbContext>();
 
 // Configure CORS to allows frontend access to backend
 Builder.Services.AddCors(options =>
@@ -36,14 +40,40 @@ Builder.Services.AddCors(options =>
        policy
             .WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
-            .AllowAnyMethod(); 
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
+
+// Add auth service
+Builder.Services.AddAuthorization();
 
 // Build App
 var app = Builder.Build();
 
+// Generate Identity User endpoint
+app.MapGroup("/auth")
+    .MapIdentityApi<ApplicationUser>();
+
+// Allow logout
+app.MapPost("/auth/logout",
+    async (SignInManager<ApplicationUser> signInManager) => 
+{
+    await signInManager.SignOutAsync();
+    return Results.NoContent(); 
+
+}).RequireAuthorization();
+
+// Allow connection to frontend
 app.UseCors("AjirFrontend");
+
+
+
+// Who is the user?
+app.UseAuthentication();
+
+// Is that user authorized?
+app.UseAuthorization();
 
 // Expose  OpenAPI endpoit
 app.MapOpenApi();
