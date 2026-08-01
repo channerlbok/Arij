@@ -4,15 +4,25 @@ using Ajir.Api.Models;
 using Ajir.Api.Data;
 using Microsoft.EntityFrameworkCore;
 namespace Ajir.Api.Endpoints;
+using System.Security.Claims;
 
 public static class IssueEndpoints
 {
     public static void MapIssueEndpoints(this IEndpointRouteBuilder app)
     {
+        var issuesGroup = app
+            .MapGroup("/projects/{projectId:guid}/issues")
+            .RequireAuthorization();
         // Add new issue to existing project
-        app.MapPost("/projects/{projectId:guid}/issues", async (Guid projectId, CreateIssueRequest request, AjirDbContext db) =>
+        issuesGroup.MapPost("", async (Guid projectId, CreateIssueRequest request, AjirDbContext db, ClaimsPrincipal user) =>
         {
-            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
+
+            var ownerID = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (ownerID is null)
+            {
+                return Results.Unauthorized();
+            }
+            var project = await db.Projects.FirstOrDefaultAsync(p => p.Id == projectId && p.OwnerId == ownerID);
 
             if (project is null)
             {
@@ -71,11 +81,17 @@ public static class IssueEndpoints
 
 
         // Handle Get request for projects issues
-        app.MapGet("/projects/{projectId:guid}/issues", async (Guid projectId, IssueType? type, IssueStatus? status, IssuePriority? priority, AjirDbContext db) =>
+        issuesGroup.MapGet("", async (Guid projectId, IssueType? type, IssueStatus? status, IssuePriority? priority, AjirDbContext db, ClaimsPrincipal user) =>
         {
+            var ownerID = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (ownerID is null)
+            {
+                return Results.Unauthorized();
+            }
             var project = await db.Projects
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == projectId);
+                .FirstOrDefaultAsync(p => p.Id == projectId && p.OwnerId == ownerID);
 
             if (project is null)
             {
@@ -111,9 +127,28 @@ public static class IssueEndpoints
         });
 
         // Handle Get request for specific issue
-        app.MapGet("/projects/{projectId:guid}/issues/{issueId:guid}", async (Guid projectId, Guid issueId, AjirDbContext db) =>
+        issuesGroup.MapGet("/{issueId:guid}", async (Guid projectId, Guid issueId, AjirDbContext db, ClaimsPrincipal user) =>
         {
-            var issue = await db.Issues.FirstOrDefaultAsync(i => i.Id == issueId && i.ProjectId == projectId);
+
+            
+            var ownerID = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (ownerID is null)
+            {
+                return Results.Unauthorized();
+            }
+            var project = await db.Projects
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == projectId && p.OwnerId == ownerID);
+
+            if (project is null)
+            {
+                return Results.NotFound();
+            }
+            var issue = await db.Issues
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Id == issueId && i.ProjectId == projectId );
+
 
             return issue is null
                 ? Results.NotFound()
@@ -122,10 +157,22 @@ public static class IssueEndpoints
 
 
         // Handle put request for specific issue
-        app.MapPut("/projects/{projectId:guid}/issues/{issueId:guid}", async (Guid projectId, Guid issueId, UpdateIssueRequests request, AjirDbContext db) =>
+        issuesGroup.MapPut("/{issueId:guid}", async (Guid projectId, Guid issueId, UpdateIssueRequests request, AjirDbContext db, ClaimsPrincipal user) =>
         {
-            var issue = await db.Issues.FirstOrDefaultAsync(i => i.Id == issueId && i.ProjectId == projectId);
+            var ownerID = user.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            if (ownerID is null)
+            {
+                return Results.Unauthorized();
+            }
+            var issue = await db.Issues.FirstOrDefaultAsync(i => i.Id == issueId && i.ProjectId == projectId);
+            var project = await db.Projects
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+            if (project is null)
+            {
+                return Results.NotFound();
+            }
             if (issue is null)
             {
                 return Results.NotFound(new
@@ -187,13 +234,31 @@ public static class IssueEndpoints
         });
 
         // Handle delete request for specific issue
-        app.MapDelete("/projects/{projectId:guid}/issues/{issueId:guid}", async (Guid projectId, Guid issueId, AjirDbContext db) =>
+        issuesGroup.MapDelete("/{issueId:guid}", async (Guid projectId, Guid issueId, AjirDbContext db, ClaimsPrincipal user) =>
         {
+            var ownerID = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if(ownerID is null)
+            {
+                return Results.Unauthorized();
+            }
             var issue = await db.Issues.FirstOrDefaultAsync(i => i.ProjectId == projectId && i.Id == issueId);
 
             if (issue is null)
+            {
                 return Results.NotFound();
+            }
 
+
+
+            var projects = await db.Projects
+                .AsNoTracking()
+                .FirstOrDefaultAsync(project => project.Id == projectId && project.OwnerId == ownerID);
+
+
+            if(projects is null)
+            {
+                return Results.NotFound();
+            }
             db.Issues.Remove(issue);
             await db.SaveChangesAsync();
             return Results.NoContent();

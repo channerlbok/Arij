@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from 'react'
 import type { Project } from '../types/Project'
-
+import { API_BASE_URL } from '../config'
 
 interface EditProjectFormProps{
     project: Project
@@ -16,27 +16,48 @@ function EditProjectForm({
 }: EditProjectFormProps){
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [submitError, setSubmitError] = useState<string | null> (null)
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>){
         event.preventDefault()
 
-        const response = await fetch(`http://localhost:5244/projects/${project.id}`,
+        setSubmitError(null)
+        if(name.trim() === ''){
+            setSubmitError('Name is required')
+            return
+        }
+        if(description.trim() === ''){
+            setSubmitError('Description is required')
+            return
+        }
+        setIsSubmitting(true)
+        try{
+          const response = await fetch(`${API_BASE_URL}/projects/${project.id}`,
             {
                 method: 'PUT',
+                credentials: 'include',
                 headers: {
                     'Content-Type' : 'application/json'
                 },
                 body: JSON.stringify({name, description})
             }
-        )
+          )
 
-        if(!response.ok)
-        {
-            throw new Error('Failed to update project')
+          if(!response.ok)
+          {
+              throw new Error('Failed to update project')
+          }
+
+          const updatedProject: Project = await response.json()
+          onProjectUpdated(updatedProject)
+          }
+        catch{
+            setSubmitError('Failed to update project')
         }
-
-        const updatedProject: Project = await response.json()
-        onProjectUpdated(updatedProject)
+        finally{
+            setIsSubmitting(false)
+        }
     }
     return (
     <form onSubmit={handleSubmit}>
@@ -45,6 +66,7 @@ function EditProjectForm({
       <input
         value={name}
         onChange={event => setName(event.target.value)}
+        required
       />
 
       <textarea
@@ -52,9 +74,15 @@ function EditProjectForm({
         onChange={event =>
           setDescription(event.target.value)
         }
+        required
       />
 
-      <button type="submit">Save</button>
+      {submitError && (
+          <p className="error-message">{submitError}</p>
+      )}
+      <button type="submit" disabled={isSubmitting}>
+      {isSubmitting ? 'Updating...' : 'Update Poject'}
+      </button>
       <button type="button" onClick={onCancel}>
         Cancel
       </button>

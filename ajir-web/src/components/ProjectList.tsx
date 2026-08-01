@@ -7,22 +7,48 @@ interface ProjectListProps {
   onSelectedProject: (project: Project) => void
 }
 
-function ProjectList({ projects, onDeleteProject, onEditProject, onSelectedProject }: ProjectListProps) {
+function ProjectList({
+  projects,
+  onDeleteProject,
+  onEditProject,
+  onSelectedProject
+}: ProjectListProps) {
   return (
     <ul className="project-list">
       {projects.map(project => (
-        <li key={project.id}>
-          <h2>{project.name}</h2>
-          <p>{project.description}</p>
-          <button onClick={() => onDeleteProject(project.id)}>
-            Delete
-          </button>
-          <button onClick={() => onEditProject(project)}>
-            Edit
-          </button>
-          <button onClick={() => onSelectedProject(project)}>
-            View Issues
-          </button>
+        <li className="project-card" key={project.id}>
+          <div className="project-card-heading">
+            <div className="project-icon">
+              {project.name.charAt(0).toUpperCase()}
+            </div>
+
+            <div>
+              <h2>{project.name}</h2>
+              <p>{project.description}</p>
+            </div>
+          </div>
+
+          <div className="card-actions">
+            <button
+              className="button-danger"
+              onClick={() => onDeleteProject(project.id)}
+            >
+              Delete
+            </button>
+
+            <button
+              className="button-secondary"
+              onClick={() => onEditProject(project)}
+            >
+              Edit
+            </button>
+
+            <button
+              onClick={() => onSelectedProject(project)}
+            >
+              View Issues
+            </button>
+          </div>
         </li>
       ))}
     </ul>

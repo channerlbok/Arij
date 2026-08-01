@@ -1,9 +1,10 @@
 using Ajir.Api.Models;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 namespace Ajir.Api.Data;
 
-public class AjirDbContext : DbContext
+public class AjirDbContext
+    : IdentityDbContext<ApplicationUser>
 {
     public AjirDbContext(DbContextOptions<AjirDbContext> options)
         : base(options)
@@ -31,6 +32,12 @@ public class AjirDbContext : DbContext
             .IsRequired();
 
         modelBuilder.Entity<Project>()
+            .HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(project => project.OwnerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Project>()
             .Property(project => project.Description)
             .HasMaxLength(1000)
             .IsRequired();
@@ -44,5 +51,7 @@ public class AjirDbContext : DbContext
             .Property(issue => issue.Description)
             .HasMaxLength(2000)
             .IsRequired();
+
+            
     }
 }
