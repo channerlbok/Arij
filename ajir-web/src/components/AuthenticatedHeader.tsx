@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../config'
 import { useEffect, useState } from 'react'
 
@@ -48,16 +48,37 @@ useEffect(() => {
     }
 
 return (
-<header className="authenticated-header">
-  <Link to="/projects">Mochu</Link>
+  <div className="sidebar-content">
+    <div>
+      <Link className="sidebar-brand" to="/projects">
+        <span className="brand-mark">M</span>
+        <span>Mochu</span>
+      </Link>
 
-  <div>
-    {email && <span>{email}</span>}
-    <button type="button" onClick={handleLogout}>
-      Log out
-    </button>
+      <nav className="sidebar-nav">
+        <NavLink
+          to="/projects"
+          className={({ isActive }) =>
+            isActive ? 'nav-link active' : 'nav-link'
+          }
+        >
+          Projects
+        </NavLink>
+      </nav>
+    </div>
+
+    <div className="sidebar-account">
+      {email && <span className="account-email">{email}</span>}
+
+      <button
+        className="logout-button"
+        type="button"
+        onClick={handleLogout}
+      >
+        Log out
+      </button>
+    </div>
   </div>
-</header>
 )
 }
 export default AuthenticatedHeader

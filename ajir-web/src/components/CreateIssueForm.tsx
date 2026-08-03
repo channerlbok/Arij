@@ -67,7 +67,6 @@ function CreateIssueForm({
 
     return(
         <form onSubmit={handleSubmit}>
-            <h1> Create an Issue</h1>
             <label>
             Issue title
             <input

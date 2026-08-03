@@ -14,45 +14,46 @@ function IssueList({
   return (
     <ul className="issue-list">
       {issues.map(issue => (
-        <li className="issue-card" key={issue.id}>
-          <div className="issue-card-heading">
-            <h2>{issue.title}</h2>
+        <li className="issue-row" key={issue.id}>
+          <div className="issue-summary">
+            <div className="issue-title-line">
+              <h2>{issue.title}</h2>
 
-            <span
-              className={`issue-badge type-${issue.type.toLowerCase()}`}
-            >
-              {issue.type}
-            </span>
+              <span className="issue-type">
+                {issue.type}
+              </span>
+            </div>
+
+            <p>{issue.description}</p>
           </div>
-
-          <p className="issue-description">
-            {issue.description}
-          </p>
 
           <div className="issue-metadata">
             <span
-              className={`issue-badge status-${issue.status.toLowerCase()}`}
+              className={`metadata-badge status-${issue.status.toLowerCase()}`}
             >
-              {issue.status}
+              {issue.status === 'InProgress'
+                ? 'In progress'
+                : issue.status}
             </span>
 
             <span
-              className={`issue-badge priority-${issue.priority.toLowerCase()}`}
+              className={`metadata-badge priority-${issue.priority.toLowerCase()}`}
             >
-              {issue.priority} priority
+              {issue.priority}
             </span>
           </div>
 
-          <div className="card-actions">
+          <div className="issue-actions">
             <button
-              className="button-secondary"
+              type="button"
               onClick={() => onEditIssue(issue)}
             >
               Edit
             </button>
 
             <button
-              className="button-danger"
+              className="delete-action"
+              type="button"
               onClick={() => onDeleteIssue(issue.id)}
             >
               Delete
