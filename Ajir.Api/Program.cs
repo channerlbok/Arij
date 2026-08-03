@@ -38,7 +38,7 @@ Builder.Services.AddCors(options =>
     options.AddPolicy("AjirFrontend", policy =>
     {
        policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins("http://localhost:5173", "https://calm-mushroom-01576fb1e.7.azurestaticapps.net")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -48,6 +48,11 @@ Builder.Services.AddCors(options =>
 // Add auth service
 Builder.Services.AddAuthorization();
 
+Builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 // Build App
 var app = Builder.Build();
 
