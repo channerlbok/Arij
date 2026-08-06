@@ -14,7 +14,8 @@ public static class ProjectEndpoints
         // Require authorization for every request
         var projectsGroup = app
             .MapGroup("/projects")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireRateLimiting("auth");
 
         // Handle Post Request
         projectsGroup.MapPost("", async (CreateProjectRequest request, AjirDbContext db, ClaimsPrincipal user) =>

@@ -12,7 +12,9 @@ public static class IssueEndpoints
     {
         var issuesGroup = app
             .MapGroup("/projects/{projectId:guid}/issues")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireRateLimiting("api");
+            
         // Add new issue to existing project
         issuesGroup.MapPost("", async (Guid projectId, CreateIssueRequest request, AjirDbContext db, ClaimsPrincipal user) =>
         {

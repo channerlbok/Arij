@@ -6,15 +6,18 @@ using Ajir.Api.Endpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 // Create Web app builder
 var Builder = WebApplication.CreateBuilder(args);
 Builder.Services.ConfigureHttpJsonOptions(options =>
 {
+    // Take  json and convert to c# object
     options.SerializerOptions.Converters.Add(
         new JsonStringEnumConverter()
     );
 });
+
 // Retrieve connection string
 var connectionString = Builder.Configuration.GetConnectionString("AjirDatabase")
 ?? throw new InvalidOperationException("AjirDatabase string is missing");
@@ -53,15 +56,63 @@ Builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
+
+// Add Rate Limiting
+Builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("auth", httpContext =>
+    {
+        var clientIP = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    
+
+        return RateLimitPartition.GetSlidingWindowLimiter(
+            partitionKey: clientIP,
+            factory: _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 6,
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }
+
+        );
+    
+    });
+
+    options.AddPolicy("api", httpContext =>
+    {
+        var clientIP = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return RateLimitPartition.GetTokenBucketLimiter(
+            partitionKey: clientIP,
+            factory: _ => new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 30,
+                TokensPerPeriod = 10,
+                ReplenishmentPeriod = TimeSpan.FromSeconds(10),
+                QueueLimit = 0,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                AutoReplenishment = true
+            }
+        );
+    });
+});
+
 // Build App
 var app = Builder.Build();
 
+var authGroup = app
+    .MapGroup("/auth")
+    .RequireRateLimiting("auth");
+
 // Generate Identity User endpoint
-app.MapGroup("/auth")
-    .MapIdentityApi<ApplicationUser>();
+authGroup.MapIdentityApi<ApplicationUser>();
 
 // Allow logout
-app.MapPost("/auth/logout",
+authGroup.MapPost("/logout",
     async (SignInManager<ApplicationUser> signInManager) => 
 {
     await signInManager.SignOutAsync();
@@ -76,6 +127,9 @@ app.UseCors("AjirFrontend");
 
 // Who is the user?
 app.UseAuthentication();
+
+// Is request allowed at the time?
+app.UseRateLimiter();
 
 // Is that user authorized?
 app.UseAuthorization();
