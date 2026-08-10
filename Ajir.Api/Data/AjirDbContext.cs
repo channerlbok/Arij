@@ -13,7 +13,9 @@ public class AjirDbContext
 
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<Issue> Issues => Set<Issue>();
-    
+
+    public DbSet<Comment> Comments => Set<Comment>();
+
 
     // Fluent API
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -52,6 +54,25 @@ public class AjirDbContext
             .HasMaxLength(2000)
             .IsRequired();
 
-            
+        modelBuilder.Entity<Comment>()
+            .HasOne<Issue>()
+            .WithMany()
+            .HasForeignKey(comment => comment.IssueId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Comment>()
+            .HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(comment => comment.AuthorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Comment>()
+            .Property(comment => comment.Body)
+            .HasMaxLength(2000)
+            .IsRequired();
+
+
+
+
     }
 }
