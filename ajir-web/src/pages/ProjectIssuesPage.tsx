@@ -292,8 +292,9 @@ function ProjectIssuesPage() {
             <p>This project has no matching issues.</p>
           )}
 
-        {!isIssueLoading && !issueLoadError && (
+        {!isIssueLoading && !issueLoadError && projectId && (
           <IssueList
+            projectId={projectId}
             issues={issues}
             onEditIssue={setEditingIssue}
             onDeleteIssue={handleDeleteIssue}

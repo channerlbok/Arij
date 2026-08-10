@@ -1,16 +1,23 @@
+import { useState } from 'react'
 import type { Issue } from '../types/Issue'
+import IssueComments from './IssueComments'
 
 interface IssueListProps {
+  projectId: string
   issues: Issue[]
   onEditIssue: (issue: Issue) => void
   onDeleteIssue: (issueId: string) => void
 }
 
 function IssueList({
+  projectId,
   issues,
   onEditIssue,
   onDeleteIssue
 }: IssueListProps) {
+  const [commentIssueId, setCommentIssueId] =
+    useState<string | null>(null)
+
   return (
     <ul className="issue-list">
       {issues.map(issue => (
@@ -58,7 +65,29 @@ function IssueList({
             >
               Delete
             </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setCommentIssueId(currentIssueId =>
+                  currentIssueId === issue.id
+                    ? null
+                    : issue.id
+                )
+              }
+            >
+              {commentIssueId === issue.id
+                ? 'Hide comments'
+                : 'Comments'}
+            </button>
           </div>
+
+          {commentIssueId === issue.id && (
+            <IssueComments
+              projectId={projectId}
+              issueId={issue.id}
+            />
+          )}
         </li>
       ))}
     </ul>
