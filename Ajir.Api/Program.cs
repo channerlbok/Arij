@@ -56,7 +56,7 @@ Builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
-
+var isDevelopment = Builder.Environment.IsDevelopment();
 // Add Rate Limiting
 Builder.Services.AddRateLimiter(options =>
 {
@@ -71,7 +71,7 @@ Builder.Services.AddRateLimiter(options =>
             partitionKey: clientIP,
             factory: _ => new SlidingWindowRateLimiterOptions
             {
-                PermitLimit = 10,
+                PermitLimit = isDevelopment ? 100 : 10,
                 Window = TimeSpan.FromMinutes(1),
                 SegmentsPerWindow = 6,
                 QueueLimit = 0,
@@ -90,8 +90,8 @@ Builder.Services.AddRateLimiter(options =>
             partitionKey: clientIP,
             factory: _ => new TokenBucketRateLimiterOptions
             {
-                TokenLimit = 30,
-                TokensPerPeriod = 10,
+                TokenLimit = isDevelopment ? 200 : 30,
+                TokensPerPeriod = isDevelopment ? 100 : 10,
                 ReplenishmentPeriod = TimeSpan.FromSeconds(10),
                 QueueLimit = 0,
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
@@ -147,6 +147,7 @@ app.MapGet("/health", () => new
 app.MapProjectEndpoints();
 app.MapIssueEndpoints();
 app.MapCommentEndpoints();
+app.MapProfile();
 
 // Run App
 app.Run();

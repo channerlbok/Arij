@@ -71,8 +71,10 @@ public class AjirDbContext
             .HasMaxLength(2000)
             .IsRequired();
 
-
-
+        modelBuilder.Entity<ApplicationUser>()
+            .Property(user => user.DisplayName)
+            .HasMaxLength(30)
+            .IsRequired();
 
     }
 }
