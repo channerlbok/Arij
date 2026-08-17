@@ -8,13 +8,26 @@ function RegistrationPage(){
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [displayName, setDisplayName] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [registerError, setRegisterError] = useState<string | null> (null); 
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>){
         event.preventDefault();
         setRegisterError(null);
+        const cleanedDisplayName = displayName.trim()
 
+        if (cleanedDisplayName === '') {
+        setRegisterError('Display name is required')
+        return
+        }
+
+        if (cleanedDisplayName.length > 50) {
+        setRegisterError(
+            'Display name cannot exceed 50 characters'
+        )
+        return
+        }
         if(password !== confirmPassword){
             setRegisterError('Passwords do not match');
             return;
@@ -38,11 +51,60 @@ function RegistrationPage(){
             return;
         }
 
-        navigate('/login');
+        const loginResponse = await fetch(
+            `${API_BASE_URL}/auth/login?useCookies=true`,
+            {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                email,
+                password
+                })
+            }
+        )
+
+        if(!loginResponse.ok){
+            setRegisterError('Failed to Register Account');
+            return;
+        }
+        const profileResponse = await fetch(
+            `${API_BASE_URL}/auth/profile`,
+            {
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                    'Content-Type' : 'application/json'
+                },
+                body: JSON.stringify({
+                    displayName: cleanedDisplayName
+                })
+
+            }
+        )
+
+        if(!profileResponse.ok){
+            setRegisterError('Account created, but the display name could not be saved');
+            return;
+        }
+
+
+        navigate('/projects');
 
     }
     return(
         <form onSubmit={handleSubmit}>
+            <label>
+                Display Name
+            <input
+                type="text"
+                value={displayName}
+                onChange={event => setDisplayName(event.target.value)}
+                required 
+            />
+            </label>
             <label>
                 Email
             <input

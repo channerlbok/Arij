@@ -4,4 +4,5 @@ export interface Comment{
     issueId: string
     authorId: string
     createdAt: string
+    authorName: string
 }
