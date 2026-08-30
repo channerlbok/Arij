@@ -1,12 +1,10 @@
-
-using Ajir.Api.Contracts;
 using Ajir.Api.Models;
 using Ajir.Api.Data;
 using Microsoft.EntityFrameworkCore;
 namespace Ajir.Api.Endpoints;
 
 using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
+
 
 public static class CommentEndpoints
 {

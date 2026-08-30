@@ -61,7 +61,7 @@ function CreateCommentForm({
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="comment-form" onSubmit={handleSubmit}>
       <label>
         Add a comment
         <textarea

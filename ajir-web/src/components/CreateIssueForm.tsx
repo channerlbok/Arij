@@ -66,7 +66,7 @@ function CreateIssueForm({
     }
 
     return(
-        <form onSubmit={handleSubmit}>
+        <form className="issue-form" onSubmit={handleSubmit}>
             <label>
             Issue title
             <input

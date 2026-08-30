@@ -13,8 +13,8 @@ public class AjirDbContext
 
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<Issue> Issues => Set<Issue>();
-
     public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>();
 
 
     // Fluent API
@@ -75,6 +75,29 @@ public class AjirDbContext
             .Property(user => user.DisplayName)
             .HasMaxLength(30)
             .IsRequired();
+
+        modelBuilder.Entity<ProjectMember>()
+            .HasOne<Project>()
+            .WithMany()
+            .HasForeignKey(ProjectMember => ProjectMember.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ProjectMember>()
+            .HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(ProjectMember => ProjectMember.UserId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<ProjectMember>()
+            .HasKey(member => member.Id);
+
+        modelBuilder.Entity<ProjectMember>()
+            .HasIndex(member => new
+            {
+                member.ProjectId,
+                member.UserId
+            })
+            .IsUnique();
 
     }
 }

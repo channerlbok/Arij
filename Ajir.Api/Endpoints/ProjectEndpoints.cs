@@ -66,6 +66,16 @@ public static class ProjectEndpoints
             };
 
             db.Projects.Add(project);
+
+
+            var projectMember = new ProjectMember
+            {
+                ProjectId = project.Id,
+                Role = "Owner",
+                UserId = ownerID
+            };
+
+            db.ProjectMembers.Add(projectMember);
             await db.SaveChangesAsync();
 
             return Results.Created($"/projects/{project.Id}", project);
@@ -77,18 +87,20 @@ public static class ProjectEndpoints
         projectsGroup.MapGet("", async (AjirDbContext db, ClaimsPrincipal user) =>
         {
 
-            /*
-            SELECT Id, Name, Description, CreatedAt
-            FROM Projects;
-            */
-            var ownerID = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (ownerID is null)
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId is null)
             {
                 return Results.Unauthorized();
             }
             var projects = await db.Projects
                 .AsNoTracking()
-                .Where(project => project.OwnerId == ownerID)
+                .Where(project =>
+                    project.OwnerId == userId ||
+                    db.ProjectMembers.Any(member =>
+                        member.ProjectId == project.Id &&
+                        member.UserId == userId
+                    )
+                )
                 .ToListAsync();
 
             return Results.Ok(projects);

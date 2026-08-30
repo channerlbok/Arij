@@ -63,7 +63,7 @@ function IssueComments({
             )
 
             if(!response.ok){
-                throw new Error('Failed to deltee comment')
+                throw new Error('Failed to delte comment')
             }
 
             setComments(currentComments =>

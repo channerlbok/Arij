@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Ajir.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b8714e1e911689ca9ba410a68eb5d6a1fea94150")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5bd5321cfa7b7a68dbaf7a4346ae391f45646408")]
 [assembly: System.Reflection.AssemblyProductAttribute("Ajir.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Ajir.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

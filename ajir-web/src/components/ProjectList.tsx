@@ -16,10 +16,15 @@ function ProjectList({
   return (
     <ul className="project-list">
       {projects.map(project => (
-        <li className="project-card" key={project.id}>
+        <li
+          className="project-card"
+          key={project.id}
+        >
           <div className="project-card-heading">
             <div className="project-icon">
-              {project.name.charAt(0).toUpperCase()}
+              {project.name
+                .charAt(0)
+                .toUpperCase()}
             </div>
 
             <div>
@@ -31,22 +36,31 @@ function ProjectList({
           <div className="card-actions">
             <button
               className="button-danger"
-              onClick={() => onDeleteProject(project.id)}
+              type="button"
+              onClick={() =>
+                onDeleteProject(project.id)
+              }
             >
               Delete
             </button>
 
             <button
               className="button-secondary"
-              onClick={() => onEditProject(project)}
+              type="button"
+              onClick={() =>
+                onEditProject(project)
+              }
             >
               Edit
             </button>
 
             <button
-              onClick={() => onSelectedProject(project)}
+              type="button"
+              onClick={() =>
+                onSelectedProject(project)
+              }
             >
-              View Issues
+              View issues
             </button>
           </div>
         </li>
