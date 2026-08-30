@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
   Link,
-  NavLink,
   useNavigate
 } from 'react-router-dom'
 import { API_BASE_URL } from '../config'
