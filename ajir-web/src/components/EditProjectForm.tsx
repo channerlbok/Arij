@@ -14,8 +14,8 @@ function EditProjectForm({
     onProjectUpdated,
     onCancel
 }: EditProjectFormProps){
-    const [name, setName] = useState('')
-    const [description, setDescription] = useState('')
+    const [name, setName] = useState(project.name)
+    const [description, setDescription] = useState(project.description)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState<string | null> (null)
 
@@ -81,7 +81,7 @@ function EditProjectForm({
           <p className="error-message">{submitError}</p>
       )}
       <button type="submit" disabled={isSubmitting}>
-      {isSubmitting ? 'Updating...' : 'Update Poject'}
+      {isSubmitting ? 'Updating...' : 'Update Project'}
       </button>
       <button type="button" onClick={onCancel}>
         Cancel

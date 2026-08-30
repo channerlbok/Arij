@@ -4,6 +4,7 @@ using Ajir.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Ajir.Api.Migrations
 {
     [DbContext(typeof(AjirDbContext))]
-    partial class AjirDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260821022954_AddProjectMembers")]
+    partial class AddProjectMembers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -192,30 +195,22 @@ namespace Ajir.Api.Migrations
 
             modelBuilder.Entity("Ajir.Api.Models.ProjectMember", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("ProjectId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("JoinedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
+                    b.HasKey("ProjectId", "UserId");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("ProjectId", "UserId")
-                        .IsUnique();
 
                     b.ToTable("ProjectMembers");
                 });

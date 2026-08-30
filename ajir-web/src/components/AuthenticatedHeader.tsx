@@ -1,84 +1,90 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { API_BASE_URL } from '../config'
 import { useEffect, useState } from 'react'
+import {
+  Link,
+  NavLink,
+  useNavigate
+} from 'react-router-dom'
+import { API_BASE_URL } from '../config'
 
-function AuthenticatedHeader(){
-    const navigate = useNavigate()
-    const [email, setEmail] = useState('')
+function AuthenticatedHeader() {
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
 
-useEffect(() => {
-  async function showEmail() {
+  useEffect(() => {
+    async function loadAccountInformation() {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/auth/manage/info`,
+          {
+            credentials: 'include'
+          }
+        )
+
+        if (response.status === 401) {
+          navigate('/login')
+          return
+        }
+
+        if (!response.ok) {
+          return
+        }
+
+        const data: { email: string } =
+          await response.json()
+
+        setEmail(data.email)
+      } catch {
+        // The rest of the page will display its own load error.
+      }
+    }
+
+    loadAccountInformation()
+  }, [navigate])
+
+  async function handleLogout() {
     const response = await fetch(
-      `${API_BASE_URL}/auth/manage/info`,
+      `${API_BASE_URL}/auth/logout`,
       {
+        method: 'POST',
         credentials: 'include'
       }
     )
 
-    if (response.status === 401) {
-      navigate('/login')
-      return
-    }
-
     if (!response.ok) {
-      return
+      throw new Error('Failed to log out')
     }
 
-    const data: { email: string } =
-      await response.json()
-
-    setEmail(data.email)
+    navigate('/login')
   }
 
-  showEmail()
-}, [navigate])
+  return (
+    <header className="app-header">
+      <Link className="app-brand" to="/projects">
+        <span className="app-brand-mark">M</span>
 
-    async function handleLogout(){
-      const response = await fetch(
-        `${API_BASE_URL}/auth/logout`,
-        {
-          method : 'POST',
-          credentials : 'include'
-        }
-      );
-      if (!response.ok) {
-        throw new Error('Failed to log out')
-      }
-      navigate('/login');
-    }
-
-return (
-  <div className="sidebar-content">
-    <div>
-      <Link className="sidebar-brand" to="/projects">
-        <span className="brand-mark">M</span>
-        <span>Mochu</span>
+        <span>
+          <strong>Mochu</strong>
+          <small>Workspace</small>
+        </span>
       </Link>
 
-      <nav className="sidebar-nav">
-        <NavLink
-          to="/projects"
-          className={({ isActive }) =>
-            isActive ? 'nav-link active' : 'nav-link'
-          }
+      <div className="app-header-actions">
+        <span className="user-avatar">
+          {email ? email.charAt(0).toUpperCase() : 'M'}
+        </span>
+
+        <span className="header-email">{email}</span>
+
+        <button
+          className="logout-button"
+          type="button"
+          onClick={handleLogout}
         >
-          Projects
-        </NavLink>
-      </nav>
-    </div>
-
-    <div className="sidebar-account">
-      {email && <span className="account-email">{email}</span>}
-
-      <button
-        className="logout-button"
-        type="button"
-        onClick={handleLogout}
-      >
-        Log out
-      </button>
-    </div>
-  </div>
-)
+          Log out
+        </button>
+      </div>
+    </header>
+  )
 }
+
 export default AuthenticatedHeader

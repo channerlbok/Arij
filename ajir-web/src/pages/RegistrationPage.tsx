@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../config'
 
 function RegistrationPage(){
@@ -95,7 +95,25 @@ function RegistrationPage(){
 
     }
     return(
-        <form onSubmit={handleSubmit}>
+      <main className="auth-page">
+        <section className="auth-brand-panel">
+          <div className="auth-brand-content">
+            <div className="auth-logo">M</div>
+            <p className="auth-eyebrow">BUILD WITH CLARITY</p>
+            <h1>Mochu</h1>
+            <p className="auth-tagline">
+              A focused command center for projects, issues, and the work that moves them forward.
+            </p>
+          </div>
+          <div className="auth-decoration"><span /><span /><span /></div>
+        </section>
+        <section className="auth-form-panel">
+        <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="auth-form-heading">
+              <p className="auth-eyebrow">INITIALIZE WORKSPACE</p>
+              <h2>Create your account</h2>
+              <p>Set up your identity and start organizing work.</p>
+            </div>
             <label>
                 Display Name
             <input
@@ -136,9 +154,14 @@ function RegistrationPage(){
                 <p className="error-message">{registerError}</p>
             )}
             <button type="submit"> 
-                Register
+                Create account
             </button>
+            <p className="auth-switch">
+              Already have an account? <Link to="/login">Log in</Link>
+            </p>
         </form>
+        </section>
+      </main>
     )
 }
 

@@ -70,7 +70,7 @@ function EditIssueForm({
     }
 
     return(
-        <form onSubmit={handleSubmit}>
+        <form className="issue-form issue-edit-form" onSubmit={handleSubmit}>
             <label>
             Issue title
             <input

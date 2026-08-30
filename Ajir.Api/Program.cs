@@ -147,7 +147,9 @@ app.MapGet("/health", () => new
 app.MapProjectEndpoints();
 app.MapIssueEndpoints();
 app.MapCommentEndpoints();
+app.MapProjectMembersEndpoints();
 app.MapProfile();
+
 
 // Run App
 app.Run();

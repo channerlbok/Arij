@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import AuthenticatedHeader from './AuthenticatedHeader'
-
+import MochuAssistant from './MochuAssistant'
 interface AppLayoutProps {
   children: ReactNode
 }
@@ -8,13 +8,14 @@ interface AppLayoutProps {
 function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="app-layout">
-      <aside className="sidebar">
-        <AuthenticatedHeader />
-      </aside>
+      <AuthenticatedHeader />
 
-      <main className="main-content">
-        {children}
+      <main className="app-main">
+        <div className="page-content">
+          {children}
+        </div>
       </main>
+      <MochuAssistant />
     </div>
   )
 }

@@ -6,37 +6,56 @@ import {
 } from 'react-router-dom'
 import type { Issue } from '../types/Issue'
 import type { Project } from '../types/Project'
+import type { ProjectMember } from '../types/ProjectMember'
 import IssueList from '../components/IssuesList'
 import CreateIssueForm from '../components/CreateIssueForm'
 import EditIssueForm from '../components/EditIssueForm'
 import AppLayout from '../components/AppLayout'
+import AddProjectMembers from '../components/AddProjectMember'
 import { API_BASE_URL } from '../config'
 
 function ProjectIssuesPage() {
   const { projectId } = useParams()
   const navigate = useNavigate()
 
-  const [issues, setIssues] = useState<Issue[]>([])
+  const [issues, setIssues] =
+    useState<Issue[]>([])
+
   const [project, setProject] =
     useState<Project | null>(null)
+
+  const [projectMembers, setProjectMembers] =
+    useState<ProjectMember[]>([])
+
   const [editingIssue, setEditingIssue] =
     useState<Issue | null>(null)
+
   const [isIssueLoading, setIsIssueLoading] =
     useState(true)
+
   const [issueLoadError, setIssueLoadError] =
     useState<string | null>(null)
-  const [typeFilter, setTypeFilter] = useState('')
-  const [priorityFilter, setPriorityFilter] =
-    useState('')
-  const [statusFilter, setStatusFilter] = useState('')
   const [issueActionError, setIssueActionError] =
     useState<string | null>(null)
+
+  const [projectMemberActionError, setprojectMemberActionError] =
+    useState<string | null>(null)
+  const [typeFilter, setTypeFilter] =
+    useState('')
+
+  const [priorityFilter, setPriorityFilter] =
+    useState('')
+
+  const [statusFilter, setStatusFilter] =
+    useState('')
+
   const [isCreatingIssue, setIsCreatingIssue] =
-  useState(false)
+    useState(false)
 
   useEffect(() => {
     async function loadIssues() {
-      const queryParameters = new URLSearchParams()
+      const queryParameters =
+        new URLSearchParams()
 
       if (typeFilter !== '') {
         queryParameters.set('type', typeFilter)
@@ -50,10 +69,14 @@ function ProjectIssuesPage() {
       }
 
       if (statusFilter !== '') {
-        queryParameters.set('status', statusFilter)
+        queryParameters.set(
+          'status',
+          statusFilter
+        )
       }
 
-      const queryString = queryParameters.toString()
+      const queryString =
+        queryParameters.toString()
 
       try {
         setIsIssueLoading(true)
@@ -71,9 +94,12 @@ function ProjectIssuesPage() {
               : `?${queryString}`
           )
 
-        const response = await fetch(issueUrl, {
-          credentials: 'include'
-        })
+        const response = await fetch(
+          issueUrl,
+          {
+            credentials: 'include'
+          }
+        )
 
         if (response.status === 401) {
           navigate('/login')
@@ -81,10 +107,14 @@ function ProjectIssuesPage() {
         }
 
         if (!response.ok) {
-          throw new Error('Failed to load issues')
+          throw new Error(
+            'Failed to load issues'
+          )
         }
 
-        const data: Issue[] = await response.json()
+        const data: Issue[] =
+          await response.json()
+
         setIssues(data)
 
         const projectResponse = await fetch(
@@ -100,7 +130,9 @@ function ProjectIssuesPage() {
         }
 
         if (!projectResponse.ok) {
-          throw new Error('Failed to load project')
+          throw new Error(
+            'Failed to load project'
+          )
         }
 
         const projectData: Project =
@@ -108,7 +140,9 @@ function ProjectIssuesPage() {
 
         setProject(projectData)
       } catch {
-        setIssueLoadError('Issues failed to load')
+        setIssueLoadError(
+          'Issues failed to load'
+        )
       } finally {
         setIsIssueLoading(false)
       }
@@ -123,7 +157,80 @@ function ProjectIssuesPage() {
     navigate
   ])
 
-  async function handleDeleteIssue(issueId: string) {
+  useEffect(() => {
+    async function loadProjectMembers() {
+      if (projectId === undefined) {
+        return
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/projects/${projectId}/members`,
+        {
+          credentials: 'include'
+        }
+      )
+
+      if (response.status === 401) {
+        navigate('/login')
+        return
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          'Failed to load project members'
+        )
+      }
+
+      const data: ProjectMember[] =
+        await response.json()
+      console.log("Loaded project members data:", data)
+      setProjectMembers(data)
+    }
+
+    loadProjectMembers()
+  }, [projectId, navigate])
+
+  async function handleDeleteProjectMember(memberId: string) {
+    const confirmed =
+      window.confirm('Delete this project member?')
+
+    if (!confirmed) {
+      return
+    }
+
+    if (projectId === undefined) {
+      return
+    }
+    setprojectMemberActionError(null)
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/projects/${projectId}/members/${memberId}`,
+        {
+          method: 'DELETE',
+          credentials: 'include'
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(
+          'Failed to delete project member'
+        )
+      }
+
+      setProjectMembers(projectMembers =>
+        projectMembers.filter(member => member.id !== memberId)
+      )
+    } catch {
+      setprojectMemberActionError(
+        'Could not delete project member'
+      )
+    }
+  }
+
+  async function handleDeleteIssue(
+    issueId: string
+  ) {
     const confirmed =
       window.confirm('Delete this issue?')
 
@@ -147,7 +254,9 @@ function ProjectIssuesPage() {
       )
 
       if (!response.ok) {
-        throw new Error('Failed to delete issue')
+        throw new Error(
+          'Failed to delete issue'
+        )
       }
 
       setIssues(currentIssues =>
@@ -166,7 +275,9 @@ function ProjectIssuesPage() {
     }
   }
 
-  function matchesCurrentFilters(issue: Issue) {
+  function matchesCurrentFilters(
+    issue: Issue
+  ) {
     const matchesType =
       typeFilter === '' ||
       issue.type === typeFilter
@@ -189,34 +300,112 @@ function ProjectIssuesPage() {
   return (
     <AppLayout>
       <section className="page">
-        <Link className="back-link" to="/projects">
+        <Link
+          className="back-link"
+          to="/projects"
+        >
           &larr; Back to projects
         </Link>
 
-        <section className="page-heading">
-          <div>
-            <p className="eyebrow">
-              PROJECT WORKSPACE
-            </p>
+        <div className="project-top-layout">
+          <aside className="project-members-compact">
+            <p className="eyebrow">Project access</p>
 
-            <h1>
-              {project?.name ?? 'Project issues'}
-            </h1>
+            <div className="members-compact-heading">
+              <h2>Members</h2>
 
-            <p>
-              Track, filter, and update this project's
-              issues.
-            </p>
-          </div>
+              <span className="member-count">
+                {projectMembers.length}
+              </span>
+            </div>
 
-          <button
-            className="primary-action"
-            type="button"
-            onClick={() => setIsCreatingIssue(true)}
-          >
-            + New issue
-          </button>
-        </section>
+            {projectMemberActionError && (
+              <p className="error-message">
+                {projectMemberActionError}
+              </p>
+            )}
+
+            {projectMembers.length === 0 ? (
+              <p className="members-empty">
+                No project members found.
+              </p>
+            ) : (
+              <ul className="members-compact-list">
+                {projectMembers.map(member => (
+                  <li key={member.id} className="member-row">
+                    <div className="member-identity">
+                      <div className="member-avatar">
+                        {member.displayName
+                          .charAt(0)
+                          .toUpperCase()}
+                      </div>
+
+                      <div className="member-details">
+                        <strong className="member-name">
+                          {member.displayName}
+                        </strong>
+
+                        <span className="member-role">
+                          {member.role}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="delete-member-btn"
+                      onClick={() =>
+                        handleDeleteProjectMember(member.id)
+                      }
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {projectId && (
+              <AddProjectMembers
+                projectId={projectId}
+                onProjectMemberAdded={newMember => {
+                  setProjectMembers(currentMembers => [
+                    ...currentMembers,
+                    newMember
+                  ])
+                }}
+              />
+            )}
+          </aside>
+
+          <section className="page-heading project-heading">
+            <div>
+              <p className="eyebrow">
+                Project workspace
+              </p>
+
+              <h1>
+                {project?.name ??
+                  'Project issues'}
+              </h1>
+
+              <p>
+                Track, filter, and update this
+                project's issues.
+              </p>
+            </div>
+
+            <button
+              className="primary-action"
+              type="button"
+              onClick={() =>
+                setIsCreatingIssue(true)
+              }
+            >
+              + New issue
+            </button>
+          </section>
+        </div>
 
         {isIssueLoading && (
           <p>Loading issues...</p>
@@ -241,13 +430,19 @@ function ProjectIssuesPage() {
             <select
               value={typeFilter}
               onChange={event =>
-                setTypeFilter(event.target.value)
+                setTypeFilter(
+                  event.target.value
+                )
               }
             >
-              <option value="">All types</option>
+              <option value="">
+                All types
+              </option>
               <option value="Bug">Bug</option>
               <option value="Task">Task</option>
-              <option value="Feature">Feature</option>
+              <option value="Feature">
+                Feature
+              </option>
             </select>
           </label>
 
@@ -257,15 +452,23 @@ function ProjectIssuesPage() {
             <select
               value={statusFilter}
               onChange={event =>
-                setStatusFilter(event.target.value)
+                setStatusFilter(
+                  event.target.value
+                )
               }
             >
-              <option value="">All statuses</option>
-              <option value="ToDo">To do</option>
+              <option value="">
+                All statuses
+              </option>
+              <option value="ToDo">
+                To do
+              </option>
               <option value="InProgress">
                 In progress
               </option>
-              <option value="Done">Done</option>
+              <option value="Done">
+                Done
+              </option>
             </select>
           </label>
 
@@ -275,13 +478,23 @@ function ProjectIssuesPage() {
             <select
               value={priorityFilter}
               onChange={event =>
-                setPriorityFilter(event.target.value)
+                setPriorityFilter(
+                  event.target.value
+                )
               }
             >
-              <option value="">All priorities</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
+              <option value="">
+                All priorities
+              </option>
+              <option value="High">
+                High
+              </option>
+              <option value="Medium">
+                Medium
+              </option>
+              <option value="Low">
+                Low
+              </option>
             </select>
           </label>
         </div>
@@ -289,61 +502,93 @@ function ProjectIssuesPage() {
         {!isIssueLoading &&
           !issueLoadError &&
           issues.length === 0 && (
-            <p>This project has no matching issues.</p>
+            <p>
+              This project has no matching
+              issues.
+            </p>
           )}
 
-        {!isIssueLoading && !issueLoadError && projectId && (
-          <IssueList
-            projectId={projectId}
-            issues={issues}
-            onEditIssue={setEditingIssue}
-            onDeleteIssue={handleDeleteIssue}
-          />
-        )}
-
-        {project && editingIssue && (
-          <EditIssueForm
-            key={editingIssue.id}
-            project={project}
-            issue={editingIssue}
-            onIssueUpdated={updatedIssue => {
-              setIssues(currentIssues => {
-                if (
-                  !matchesCurrentFilters(updatedIssue)
-                ) {
-                  return currentIssues.filter(
-                    issue =>
-                      issue.id !== updatedIssue.id
-                  )
+        {!isIssueLoading &&
+          !issueLoadError &&
+          projectId && (
+            <IssueList
+              projectId={projectId}
+              issues={issues}
+              onEditIssue={setEditingIssue}
+              onDeleteIssue={
+                handleDeleteIssue
+              }
+            />
+          )}
+          {project && editingIssue && (
+            <div
+              className="issue-edit-overlay"
+              onMouseDown={event => {
+                if (event.target === event.currentTarget) {
+                  setEditingIssue(null)
                 }
+              }}
+            >
+              <section className="issue-edit-dialog">
+                <div className="issue-edit-dialog-header">
+                  <div>
+                    <p className="member-invite-eyebrow">ISSUE DETAILS</p>
+                    <h2>Edit issue</h2>
+                  </div>
 
-                return currentIssues.map(issue =>
-                  issue.id === updatedIssue.id
-                    ? updatedIssue
-                    : issue
-                )
-              })
+                  <button
+                    className="issue-edit-close"
+                    type="button"
+                    onClick={() => setEditingIssue(null)}
+                    aria-label="Close edit issue form"
+                  >
+                    ×
+                  </button>
+                </div>
 
-              setEditingIssue(null)
-            }}
-            onCancel={() => setEditingIssue(null)}
-          />
-        )}
+                <EditIssueForm
+                  key={editingIssue.id}
+                  project={project}
+                  issue={editingIssue}
+                  onIssueUpdated={updatedIssue => {
+                    setIssues(currentIssues =>
+                      currentIssues.map(issue =>
+                        issue.id === updatedIssue.id
+                          ? updatedIssue
+                          : issue
+                      )
+                    )
+
+                    setEditingIssue(null)
+                  }}
+                  onCancel={() => setEditingIssue(null)}
+                />
+              </section>
+            </div>
+          )}
+
         {project && isCreatingIssue && (
           <div
             className="modal-backdrop"
-            onMouseDown={() => setIsCreatingIssue(false)}
+            onMouseDown={() =>
+              setIsCreatingIssue(false)
+            }
           >
             <div
               className="modal-dialog"
               role="dialog"
               aria-modal="true"
               aria-labelledby="create-issue-title"
-              onMouseDown={event => event.stopPropagation()}
+              onMouseDown={event =>
+                event.stopPropagation()
+              }
             >
               <div className="modal-header">
                 <div>
-                  <p className="eyebrow">NEW WORK ITEM</p>
+                  <p className="eyebrow">
+                    New work item
+                  </p>
+
                   <h2 id="create-issue-title">
                     Create an issue
                   </h2>
@@ -352,7 +597,9 @@ function ProjectIssuesPage() {
                 <button
                   className="modal-close"
                   type="button"
-                  onClick={() => setIsCreatingIssue(false)}
+                  onClick={() =>
+                    setIsCreatingIssue(false)
+                  }
                   aria-label="Close form"
                 >
                   ×
@@ -362,11 +609,17 @@ function ProjectIssuesPage() {
               <CreateIssueForm
                 project={project}
                 onIssueCreated={newIssue => {
-                  if (matchesCurrentFilters(newIssue)) {
-                    setIssues(currentIssues => [
-                      ...currentIssues,
+                  if (
+                    matchesCurrentFilters(
                       newIssue
-                    ])
+                    )
+                  ) {
+                    setIssues(
+                      currentIssues => [
+                        ...currentIssues,
+                        newIssue
+                      ]
+                    )
                   }
 
                   setIsCreatingIssue(false)
