@@ -381,14 +381,13 @@ function ProjectIssuesPage() {
           <section className="page-heading project-heading">
             <div>
               <p className="eyebrow">
-                Project workspace
+                Current Project
               </p>
 
               <h1>
                 {project?.name ??
                   'Project issues'}
               </h1>
-
               <p>
                 Track, filter, and update this
                 project's issues.
