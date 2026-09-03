@@ -57,22 +57,51 @@ function AuthenticatedHeader() {
   }
 
   return (
-    <header className="app-header">
-      <Link className="app-brand" to="/projects">
-        <span className="app-brand-mark">M</span>
+    <>
+    <div className="board-planes" aria-hidden="true">
+      <span className="board-plane board-plane-one" />
+      <span className="board-plane board-plane-two" />
+    </div>
 
-        <span>
+    <header className="app-header">
+      <Link className="brand" to="/projects">
+        <span className="brand-mark">M</span>
+
+        <span className="brand-copy">
           <strong>Mochu</strong>
-          <small>Workspace</small>
+          <small>WORKSPACE</small>
         </span>
       </Link>
 
-      <div className="app-header-actions">
-        <span className="user-avatar">
-          {email ? email.charAt(0).toUpperCase() : 'M'}
+      <nav className="main-nav" aria-label="Main navigation">
+        <Link className="main-nav-link active" to="/projects">
+          Projects
+        </Link>
+
+        <button
+          className="main-nav-link mochu-nav-button"
+          type="button"
+          onClick={() =>
+            window.dispatchEvent(
+              new Event('open-mochu-assistant')
+            )
+          }
+        >
+          ✦ Plan with Mochu
+        </button>
+      </nav>
+
+      <div className="header-account">
+        <span
+          className="header-avatar"
+          aria-label="Signed-in user"
+        >
+          {email.charAt(0).toUpperCase() || 'M'}
         </span>
 
-        <span className="header-email">{email}</span>
+        <span className="header-email">
+          {email}
+        </span>
 
         <button
           className="logout-button"
@@ -83,7 +112,8 @@ function AuthenticatedHeader() {
         </button>
       </div>
     </header>
-  )
+  </>
+)
 }
 
 export default AuthenticatedHeader

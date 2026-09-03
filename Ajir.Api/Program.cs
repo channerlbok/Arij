@@ -101,6 +101,8 @@ Builder.Services.AddRateLimiter(options =>
     });
 });
 
+Builder.Services.AddHttpClient();
+
 // Build App
 var app = Builder.Build();
 
@@ -149,7 +151,7 @@ app.MapIssueEndpoints();
 app.MapCommentEndpoints();
 app.MapProjectMembersEndpoints();
 app.MapProfile();
-
+app.MapAiEndpoints();
 
 // Run App
 app.Run();

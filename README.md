@@ -1,32 +1,46 @@
-# Ajir
+# Mochu
 
-Ajir is a lightweight project management REST API built with ASP.NET Core. It provides endpoints for managing projects and their associated issues.
+Mochu is a full-stack project-management app for organizing projects, tracking issues, collaborating with members, and discussing work through comments.
 
-## Features
+[Live demo](https://calm-mushroom-01576fb1e.7.azurestaticapps.net)
 
-- Create, retrieve, update, and delete projects
-- Create and manage project issues
-- Validate incoming API requests
-- Return appropriate HTTP status codes and error responses
-- Interactive API testing through generated `.http` requests
+![Mochu projects page](docs/screenshots/projects.png)
 
-## Technologies
+## What you can do
 
-- C#
-- ASP.NET Core Minimal APIs
-- .NET 10
-- REST architecture
+- Create an account and sign in securely
+- Create, edit, and delete projects
+- Create, filter, edit, and delete issues
+- Add project members by email
+- Collaborate through issue comments
+- Track issue type, priority, and status
 
-## Getting Started
+![Mochu issues page](docs/screenshots/issues.png)
 
-### Prerequisites
+## Built with
 
-Install the [.NET SDK](https://dotnet.microsoft.com/download).
+- **Frontend:** React, TypeScript, Vite
+- **Backend:** C#, ASP.NET Core Minimal APIs
+- **Database:** Azure SQL with Entity Framework Core
+- **Authentication:** ASP.NET Core Identity with cookie authentication
+- **Deployment:** Azure Static Web Apps, Azure App Service, GitHub Actions
 
-### Run the application
+## A few technical details
 
-Clone the repository:
+- Users can access projects they own or have been added to as members.
+- Project membership is modeled with a `ProjectMember` join table.
+- The API uses authorization checks, CORS, and rate limiting.
+- The frontend and backend are deployed separately and communicate through REST endpoints.
+
+## Run locally
 
 ```bash
-git clone https://github.com/channerlbok/Ajir.git
-cd Ajir
+# Backend
+cd Ajir.Api
+dotnet ef database update
+dotnet run
+
+# Frontend
+cd ../ajir-web
+npm install
+npm run dev
